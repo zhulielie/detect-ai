@@ -12,6 +12,7 @@
 [![VS Code](https://img.shields.io/badge/VS%20Code-Extension-blueviolet.svg)](./vscode)
 [![Web UI](https://img.shields.io/badge/Web-UI-orange.svg)](./web)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](./Dockerfile)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-00C7B7.svg)](https://detect-ai-neur.onrender.com/)
 
 </div>
 
@@ -105,6 +106,8 @@ python -m detect_ai scan src/ --threshold 75
 ```
 
 ### Web UI
+
+**在线体验**: https://detect-ai-neur.onrender.com/
 
 ```bash
 pip install ".[web]"

@@ -35,6 +35,9 @@ dev = ["pytest>=7.0", "black", "mypy", "ruff"]
 [project.scripts]
 detect-ai = "detect_ai.cli:main"
 
+[tool.setuptools]
+packages = ["detect_ai"]
+
 [project.urls]
 Homepage = "https://github.com/zhuli/detect-ai"
 Issues = "https://github.com/zhuli/detect-ai/issues"

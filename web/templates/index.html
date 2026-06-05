@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detect-ai — AI 代码检测器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 20px 15px;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .header p { color: #8b949e; font-size: 1rem; }
+        .lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            cursor: pointer;
+        }
+        .lang-switch:hover { border-color: #8b5cf6; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #161b22;
+            color: #8b949e;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            color: #fff;
+            border-color: transparent;
+        }
+        .tab:hover:not(.active) { border-color: #8b5cf6; color: #c9d1d9; }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 14px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .control-group label {
+            font-size: 0.8rem;
+            color: #8b949e;
+            font-weight: 500;
+        }
+        select, input[type="text"] {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 7px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        select:focus, input:focus { border-color: #8b5cf6; }
+        .btn {
+            padding: 9px 22px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            color: #fff;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        .btn-secondary:hover { border-color: #8b5cf6; }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #21262d;
+            border-bottom: 1px solid #30363d;
+        }
+        .panel-title { font-size: 0.85rem; font-weight: 600; color: #e6edf3; }
+        .panel-badge {
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .badge-input { background: #238636; color: #fff; }
+        .badge-output { background: #8b5cf6; color: #fff; }
+
+        textarea.code-input {
+            width: 100%;
+            height: 420px;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: none;
+            padding: 14px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12.5px;
+            line-height: 1.55;
+            resize: vertical;
+            outline: none;
+        }
+        .code-output {
+            height: 420px;
+            overflow: auto;
+            background: #0d1117;
+        }
+        .code-output pre {
+            margin: 0;
+            padding: 14px;
+            font-size: 12.5px;
+            line-height: 1.55;
+        }
+        .code-output pre code { background: transparent !important; }
+
+        .editor-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 900px) {
+            .editor-row { grid-template-columns: 1fr; }
+        }
+
+        .dropzone {
+            border: 2px dashed #30363d;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #161b22;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        .dropzone:hover { border-color: #8b5cf6; background: #1c2128; }
+        .dropzone.dragover { border-color: #f43f5e; background: #1c2128; }
+        .dropzone-text { color: #8b949e; font-size: 0.95rem; }
+        .dropzone-text strong { color: #c9d1d9; }
+
+        .error-msg {
+            color: #f85149;
+            font-size: 0.85rem;
+            padding: 8px 14px;
+            background: rgba(248,81,73,0.08);
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        .success-msg {
+            color: #3fb950;
+            font-size: 0.85rem;
+            padding: 8px 14px;
+            background: rgba(63,185,80,0.08);
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .result-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #8b949e;
+            margin-top: 6px;
+        }
+        .stat-bar {
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s ease;
+        }
+
+        .rule-list { display: flex; flex-direction: column; gap: 8px; }
+        .rule-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #0d1117;
+            border-radius: 6px;
+        }
+        .rule-row-name {
+            width: 120px;
+            font-size: 0.8rem;
+            color: #8b949e;
+            flex-shrink: 0;
+        }
+        .rule-row-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: #30363d;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .rule-row-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        .rule-row-score {
+            width: 40px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        .file-list { display: flex; flex-direction: column; gap: 8px; }
+        .file-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #0d1117;
+            border-radius: 6px;
+        }
+        .file-row-name {
+            flex: 1;
+            font-size: 0.8rem;
+            color: #c9d1d9;
+            word-break: break-all;
+        }
+        .file-row-score {
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .file-row-bar {
+            width: 100px;
+            height: 6px;
+            background: #30363d;
+            border-radius: 3px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .file-row-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="lang-switch" onclick="toggleLang()">EN / 中文</button>
+        <h1>detect-ai</h1>
+        <p data-i18n="subtitle">deai 的宿敌 — 通过 AST 指纹检测 AI 生成代码</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="setMode('single')" id="tab-single" data-i18n="tabSingle">📝 单文件</div>
+            <div class="tab" onclick="setMode('batch')" id="tab-batch" data-i18n="tabBatch">📦 项目扫描</div>
+        </div>
+
+        <!-- SINGLE FILE MODE -->
+        <div id="mode-single">
+            <div class="controls">
+                <div class="control-group">
+                    <label data-i18n="labelLanguage">语言</label>
+                    <select id="language">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript / TypeScript</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="run-btn" onclick="analyze()">
+                    <span id="btn-text" data-i18n="btnAnalyze">🔍 分析</span>
+                </button>
+                <button class="btn btn-secondary" id="adv-btn" onclick="adversarial()">
+                    <span id="adv-btn-text">🛡️ 对抗测试</span>
+                </button>
+            </div>
+
+            <div class="editor-row">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title" data-i18n="panelInput">输入（你的代码）</span>
+                        <span class="panel-badge badge-input" data-i18n="badgeSource">源码</span>
+                    </div>
+                    <div class="panel-body">
+                        <textarea class="code-input" id="source" spellcheck="false">def process_user_data(user_list: list[dict], output_directory: str, verbose: bool = True) -> str | None:
+    """
+    Process a list of user dictionaries and write the result to a JSON file.
+
+    Args:
+        user_list: List of user dictionaries.
+        output_directory: Directory to write output.
+        verbose: Whether to print progress.
+
+    Returns:
+        Output path or None if input is empty.
+    """
+    if user_list is None:
+        return None
+
+    processed_results = []
+    for user in user_list:
+        if not user.get("is_active"):
+            continue
+        user_id = user["id"]
+        user_name = user["name"]
+        user_email = user["email"]
+        processed_item = {"id": user_id, "name": user_name, "email": user_email, "status": "active"}
+        processed_results.append(processed_item)
+
+    if verbose:
+        print(f"Processed {len(processed_results)} users")
+
+    return output_directory</textarea>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title" data-i18n="panelOutput">结果</span>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button class="btn btn-secondary" id="copy-btn" onclick="copyOutput()" style="padding:4px 12px;font-size:0.75rem;" data-i18n="btnCopy">复制</button>
+                            <span class="panel-badge badge-output" data-i18n="badgeReport">报告</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="code-output" id="output">
+                            <pre><code class="language-python" data-i18n="hintAnalyze"># 点击"分析"查看检测结果</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BATCH MODE -->
+        <div id="mode-batch" class="hidden">
+            <div class="controls">
+                <div class="control-group">
+                    <label data-i18n="labelInputType">输入方式</label>
+                    <select id="batch-mode" onchange="toggleBatchMode()">
+                        <option value="zip" data-i18n="optZip">📦 ZIP 上传</option>
+                        <option value="path" data-i18n="optPath">📁 本地路径</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="batch-btn" onclick="processBatch()">
+                    <span id="batch-btn-text" data-i18n="btnScan">🔍 扫描</span>
+                </button>
+            </div>
+
+            <div id="batch-zip-panel">
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('zip-file').click()">
+                    <div class="dropzone-text">
+                        <strong data-i18n="dropzoneClick">点击选择 ZIP</strong><br>
+                        <span style="font-size:0.8rem;opacity:0.6;" data-i18n="dropzoneOr">或将 ZIP 拖拽到此处</span>
+                    </div>
+                </div>
+                <input type="file" id="zip-file" accept=".zip" style="display:none" onchange="handleFileSelect(event)">
+            </div>
+
+            <div id="batch-path-panel" class="hidden">
+                <div style="padding:14px; background:#161b22; border:1px solid #30363d; border-radius:10px;">
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <label style="font-size:0.85rem; color:#8b949e; font-weight:500; min-width:60px;" data-i18n="labelPath">路径</label>
+                        <input type="text" id="local-path" placeholder="C:/Users/you/project 或 ./src" style="flex:1; min-width:200px;">
+                    </div>
+                    <div style="font-size:0.75rem; color:#8b949e; margin-top:8px;" data-i18n="pathHint">
+                        输入目录路径，递归扫描所有 .py 文件。
+                    </div>
+                </div>
+            </div>
+
+            <div id="batch-status"></div>
+        </div>
+
+        <div id="error" class="error-msg" style="display:none;"></div>
+    </div>
+
+    <script>
+        const I18N = {
+            zh: {
+                subtitle: 'deai 的宿敌 — 通过 AST 指纹检测 AI 生成代码',
+                tabSingle: '📝 单文件',
+                tabBatch: '📦 项目扫描',
+                labelLanguage: '语言',
+                btnAnalyze: '🔍 分析',
+                panelInput: '输入（你的代码）',
+                panelOutput: '结果',
+                badgeSource: '源码',
+                badgeReport: '报告',
+                btnCopy: '复制',
+                hintAnalyze: '# 点击"分析"查看检测结果',
+                labelInputType: '输入方式',
+                optZip: '📦 ZIP 上传',
+                optPath: '📁 本地路径',
+                btnScan: '🔍 扫描',
+                dropzoneClick: '点击选择 ZIP',
+                dropzoneOr: '或将 ZIP 拖拽到此处',
+                labelPath: '路径',
+                pathHint: '输入目录路径，递归扫描所有 .py 文件。',
+                analyzing: '分析中...',
+                scanning: '扫描中...',
+                pleaseSelectZip: '请先选择 ZIP 文件',
+                pleaseEnterPath: '请输入路径',
+                unknownError: '未知错误',
+                networkError: '网络错误：',
+                scanFailed: '扫描失败',
+                copied: '已复制！',
+                adversarial: '对抗测试',
+                adversarialRunning: '对抗测试中...',
+                before: '原始检测',
+                after: 'deai 伪装后检测',
+                deaiNotFound: '未找到 deai，对抗测试需要 deai 项目',
+                scoreDrop: '分数下降',
+                scoreStable: '分数保持稳定 — 检测器未被欺骗！',
+                resistant: '🛡️ 检测器对 deai 伪装具有抵抗力',
+                aiScore: 'AI 指数 / 100',
+                confidence: '置信度',
+                filesScanned: '扫描文件数',
+                avgAiScore: '平均 AI 指数',
+                human: '高度疑似人类',
+                likely_human: '可能人类',
+                uncertain: '难以判断',
+                likely_ai: '可能 AI',
+                ai: '强烈疑似 AI',
+            },
+            en: {
+                subtitle: 'The antagonist of deai — detect AI-generated code through AST fingerprinting',
+                tabSingle: '📝 Single File',
+                tabBatch: '📦 Project Scan',
+                labelLanguage: 'Language',
+                btnAnalyze: '🔍 Analyze',
+                panelInput: 'Input (Your Code)',
+                panelOutput: 'Result',
+                badgeSource: 'SOURCE',
+                badgeReport: 'REPORT',
+                btnCopy: 'Copy',
+                hintAnalyze: '# Click "Analyze" to see detection results',
+                labelInputType: 'Input Type',
+                optZip: '📦 ZIP Upload',
+                optPath: '📁 Local Path',
+                btnScan: '🔍 Scan',
+                dropzoneClick: 'Click to select ZIP',
+                dropzoneOr: 'or drag a ZIP file here',
+                labelPath: 'Path',
+                pathHint: 'Enter a directory path. All .py files will be scanned recursively.',
+                analyzing: 'Analyzing...',
+                scanning: 'Scanning...',
+                pleaseSelectZip: 'Please select a ZIP file first',
+                pleaseEnterPath: 'Please enter a path',
+                unknownError: 'Unknown error',
+                networkError: 'Network error: ',
+                scanFailed: 'Scan failed',
+                copied: 'Copied!',
+                adversarial: 'Adversarial Test',
+                adversarialRunning: 'Running adversarial test...',
+                before: 'Original Detection',
+                after: 'After deai Humanization',
+                deaiNotFound: 'deai not found. Adversarial test requires deai project.',
+                scoreDrop: 'Score dropped',
+                scoreStable: 'Score stayed high — detector not fooled!',
+                resistant: '🛡️ Detector is resistant to deai camouflage',
+                aiScore: 'AI Score / 100',
+                confidence: 'Confidence',
+                filesScanned: 'Files Scanned',
+                avgAiScore: 'Avg AI Score',
+                human: 'Human',
+                likely_human: 'Likely Human',
+                uncertain: 'Uncertain',
+                likely_ai: 'Likely AI',
+                ai: 'Strongly AI',
+            }
+        };
+
+        let currentLang = 'zh';
+
+        function applyLang() {
+            const dict = I18N[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = dict[key];
+                    } else {
+                        el.textContent = dict[key];
+                    }
+                }
+            });
+            document.querySelector('.lang-switch').textContent = currentLang === 'zh' ? 'EN / 中文' : '中文 / EN';
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            applyLang();
+        }
+
+        function t(key) {
+            return I18N[currentLang][key] || key;
+        }
+
+        function setMode(mode) {
+            document.getElementById('tab-single').classList.toggle('active', mode === 'single');
+            document.getElementById('tab-batch').classList.toggle('active', mode === 'batch');
+            document.getElementById('mode-single').classList.toggle('hidden', mode !== 'single');
+            document.getElementById('mode-batch').classList.toggle('hidden', mode !== 'batch');
+        }
+
+        function toggleBatchMode() {
+            const mode = document.getElementById('batch-mode').value;
+            document.getElementById('batch-zip-panel').classList.toggle('hidden', mode !== 'zip');
+            document.getElementById('batch-path-panel').classList.toggle('hidden', mode !== 'path');
+        }
+
+        async function analyze() {
+            const btn = document.getElementById('run-btn');
+            const btnText = document.getElementById('btn-text');
+            const source = document.getElementById('source').value;
+            const outputDiv = document.getElementById('output');
+            const errorDiv = document.getElementById('error');
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>' + t('analyzing');
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source, language: document.getElementById('language').value })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    outputDiv.innerHTML = renderResult(data.report);
+                    hljs.highlightAll();
+                } else {
+                    errorDiv.textContent = data.error || t('unknownError');
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = t('networkError') + err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '🔍 ' + t('btnAnalyze').replace('🔍 ', '');
+            }
+        }
+
+        function renderResult(report) {
+            const score = report.overall_score;
+            const verdict = report.verdict;
+            const v = {
+                human: { label: t('human'), emoji: '🧑‍💻', color: '#2ecc71' },
+                likely_human: { label: t('likely_human'), emoji: '👤', color: '#27ae60' },
+                uncertain: { label: t('uncertain'), emoji: '❓', color: '#f39c12' },
+                likely_ai: { label: t('likely_ai'), emoji: '🤖', color: '#e67e22' },
+                ai: { label: t('ai'), emoji: '🤖🤖', color: '#e74c3c' },
+            }[verdict] || { label: t('uncertain'), emoji: '❓', color: '#f39c12' };
+            const scoreColor = score > 70 ? '#e74c3c' : score > 40 ? '#f39c12' : '#2ecc71';
+
+            let rulesHtml = '';
+            for (const r of report.results) {
+                const color = r.score > 70 ? '#e74c3c' : r.score > 40 ? '#f39c12' : '#2ecc71';
+                rulesHtml += `
+                    <div class="rule-row">
+                        <div class="rule-row-name">${r.rule_name}</div>
+                        <div class="rule-row-bar-bg">
+                            <div class="rule-row-bar-fill" style="width: ${r.score}%; background: ${color}"></div>
+                        </div>
+                        <div class="rule-row-score" style="color: ${color}">${r.score.toFixed(1)}</div>
+                    </div>
+                    <div style="font-size:0.7rem;color:#475569;padding-left:132px;margin-top:-4px;margin-bottom:4px;">${escapeHtml(r.message)}</div>
+                `;
+            }
+
+            return `
+                <div style="padding: 20px;">
+                    <div class="result-overview">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: ${scoreColor}">${score.toFixed(1)}</div>
+                            <div class="stat-label">${t('aiScore')}</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" style="width: ${score}%; background: ${scoreColor}"></div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: ${v.color}; font-size: 1.4rem;">${v.emoji}</div>
+                            <div class="stat-label">${v.label}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #8b949e; font-size: 1.4rem;">${(report.confidence * 100).toFixed(0)}%</div>
+                            <div class="stat-label">${t('confidence')}</div>
+                        </div>
+                    </div>
+                    <div class="rule-list">${rulesHtml}</div>
+                </div>
+            `;
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const dz = document.getElementById('dropzone');
+            dz.querySelector('.dropzone-text').innerHTML = '<strong>' + escapeHtml(file.name) + '</strong><br><span style="font-size:0.8rem;opacity:0.6;">Ready to scan</span>';
+        }
+
+        const dz = document.getElementById('dropzone');
+        dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+        dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+        dz.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                document.getElementById('zip-file').files = files;
+                handleFileSelect({ target: { files } });
+            }
+        });
+
+        async function processBatch() {
+            const mode = document.getElementById('batch-mode').value;
+            const btn = document.getElementById('batch-btn');
+            const btnText = document.getElementById('batch-btn-text');
+            const status = document.getElementById('batch-status');
+            const errorDiv = document.getElementById('error');
+            const outputDiv = document.getElementById('output');
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>' + t('scanning');
+            status.innerHTML = '';
+            errorDiv.style.display = 'none';
+
+            try {
+                let res;
+                if (mode === 'zip') {
+                    const fileInput = document.getElementById('zip-file');
+                    if (!fileInput.files.length) {
+                        errorDiv.textContent = t('pleaseSelectZip');
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
+                        btnText.textContent = '🔍 ' + t('btnScan').replace('🔍 ', '');
+                        return;
+                    }
+                    const form = new FormData();
+                    form.append('zip', fileInput.files[0]);
+                    res = await fetch('/api/batch', { method: 'POST', body: form });
+                } else {
+                    const path = document.getElementById('local-path').value.trim();
+                    if (!path) {
+                        errorDiv.textContent = t('pleaseEnterPath');
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
+                        btnText.textContent = '🔍 ' + t('btnScan').replace('🔍 ', '');
+                        return;
+                    }
+                    res = await fetch('/api/batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path })
+                    });
+                }
+
+                const data = await res.json();
+                if (data.ok) {
+                    outputDiv.innerHTML = renderBatchResult(data);
+                    hljs.highlightAll();
+                } else {
+                    errorDiv.textContent = data.error || t('scanFailed');
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = t('networkError') + err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '🔍 ' + t('btnScan').replace('🔍 ', '');
+            }
+        }
+
+        function renderBatchResult(data) {
+            const reports = data.reports;
+            const overall = data.overall;
+            const verdict = data.verdict;
+            const v = {
+                human: { label: t('human'), emoji: '🧑‍💻', color: '#2ecc71' },
+                likely_human: { label: t('likely_human'), emoji: '👤', color: '#27ae60' },
+                uncertain: { label: t('uncertain'), emoji: '❓', color: '#f39c12' },
+                likely_ai: { label: t('likely_ai'), emoji: '🤖', color: '#e67e22' },
+                ai: { label: t('ai'), emoji: '🤖🤖', color: '#e74c3c' },
+            }[verdict] || { label: t('uncertain'), emoji: '❓', color: '#f39c12' };
+            const scoreColor = overall > 70 ? '#e74c3c' : overall > 40 ? '#f39c12' : '#2ecc71';
+
+            let filesHtml = '';
+            for (const r of reports) {
+                const color = r.overall_score > 70 ? '#e74c3c' : r.overall_score > 40 ? '#f39c12' : '#2ecc71';
+                filesHtml += `
+                    <div class="file-row">
+                        <div class="file-row-name">${escapeHtml(r.file_path)}</div>
+                        <div class="file-row-bar">
+                            <div class="file-row-bar-fill" style="width: ${r.overall_score}%; background: ${color}"></div>
+                        </div>
+                        <div class="file-row-score" style="color: ${color}">${r.overall_score.toFixed(1)}</div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="padding: 20px;">
+                    <div class="result-overview">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: ${scoreColor}">${overall.toFixed(1)}</div>
+                            <div class="stat-label">${t('avgAiScore')}</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" style="width: ${overall}%; background: ${scoreColor}"></div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: ${v.color}; font-size: 1.4rem;">${v.emoji}</div>
+                            <div class="stat-label">${v.label}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #8b949e; font-size: 1.4rem;">${reports.length}</div>
+                            <div class="stat-label">${t('filesScanned')}</div>
+                        </div>
+                    </div>
+                    <div class="file-list">${filesHtml}</div>
+                </div>
+            `;
+        }
+
+        async function adversarial() {
+            const btn = document.getElementById('adv-btn');
+            const btnText = document.getElementById('adv-btn-text');
+            const source = document.getElementById('source').value;
+            const outputDiv = document.getElementById('output');
+            const errorDiv = document.getElementById('error');
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>' + t('adversarialRunning');
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/adversarial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    outputDiv.innerHTML = renderAdversarialResult(data);
+                } else {
+                    errorDiv.textContent = data.error || t('unknownError');
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = t('networkError') + err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '🛡️ ' + t('adversarial');
+            }
+        }
+
+        function renderAdversarialResult(data) {
+            const before = data.before;
+            const after = data.after;
+            const beforeColor = before.overall_score > 70 ? '#e74c3c' : before.overall_score > 40 ? '#f39c12' : '#2ecc71';
+            const afterColor = after.overall_score > 70 ? '#e74c3c' : after.overall_score > 40 ? '#f39c12' : '#2ecc71';
+            const drop = before.overall_score - after.overall_score;
+            const resistant = drop < 20;
+
+            let rulesHtml = '';
+            for (let i = 0; i < before.results.length; i++) {
+                const br = before.results[i];
+                const ar = after.results[i] || br;
+                const bColor = br.score > 70 ? '#e74c3c' : br.score > 40 ? '#f39c12' : '#2ecc71';
+                const aColor = ar.score > 70 ? '#e74c3c' : ar.score > 40 ? '#f39c12' : '#2ecc71';
+                const delta = (ar.score - br.score).toFixed(1);
+                const deltaColor = delta > 0 ? '#e74c3c' : delta < -10 ? '#2ecc71' : '#8b949e';
+                rulesHtml += `
+                    <div class="rule-row">
+                        <div class="rule-row-name">${br.rule_name}</div>
+                        <div style="flex:1;display:flex;gap:8px;align-items:center;">
+                            <div class="rule-row-bar-bg" style="flex:1;">
+                                <div class="rule-row-bar-fill" style="width: ${br.score}%; background: ${bColor}"></div>
+                            </div>
+                            <div style="width:40px;text-align:right;font-size:0.8rem;color:${bColor};">${br.score.toFixed(1)}</div>
+                            <div style="width:30px;text-align:center;color:#8b949e;font-size:0.75rem;">→</div>
+                            <div class="rule-row-bar-bg" style="flex:1;">
+                                <div class="rule-row-bar-fill" style="width: ${ar.score}%; background: ${aColor}"></div>
+                            </div>
+                            <div style="width:40px;text-align:right;font-size:0.8rem;color:${aColor};">${ar.score.toFixed(1)}</div>
+                            <div style="width:50px;text-align:right;font-size:0.75rem;color:${deltaColor};">${delta > 0 ? '+' : ''}${delta}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="padding: 20px;">
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <div style="font-size:1.1rem;font-weight:700;color:${resistant ? '#2ecc71' : '#f39c12'};">${resistant ? t('resistant') : t('scoreDrop') + ': ' + drop.toFixed(1)}</div>
+                        ${!data.deai_available ? '<div style="font-size:0.8rem;color:#8b949e;margin-top:4px;">' + t('deaiNotFound') + '</div>' : ''}
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                        <div class="stat-card">
+                            <div style="font-size:0.75rem;color:#8b949e;margin-bottom:4px;">${t('before')}</div>
+                            <div class="stat-value" style="color:${beforeColor}">${before.overall_score.toFixed(1)}</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" style="width:${before.overall_score}%;background:${beforeColor}"></div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size:0.75rem;color:#8b949e;margin-bottom:4px;">${t('after')}</div>
+                            <div class="stat-value" style="color:${afterColor}">${after.overall_score.toFixed(1)}</div>
+                            <div class="stat-bar"><div class="stat-bar-fill" style="width:${after.overall_score}%;background:${afterColor}"></div></div>
+                        </div>
+                    </div>
+                    <div class="rule-list">${rulesHtml}</div>
+                </div>
+            `;
+        }
+
+        function copyOutput() {
+            const codeEl = document.querySelector('#output code');
+            if (!codeEl) return;
+            navigator.clipboard.writeText(codeEl.textContent).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const old = btn.textContent;
+                btn.textContent = t('copied');
+                setTimeout(() => { btn.textContent = old; }, 1500);
+            });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        applyLang();
+    </script>
+</body>
+</html>

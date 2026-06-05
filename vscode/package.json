@@ -1,0 +1,90 @@
+{
+  "name": "detect-ai",
+  "displayName": "detect-ai",
+  "description": "Detect AI-generated source code. The antagonist of deai.",
+  "version": "0.1.0",
+  "publisher": "anonymous",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Testing"
+  ],
+  "keywords": [
+    "ai",
+    "detection",
+    "code",
+    "deai"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "detect-ai.scanFile",
+        "title": "Scan Current File",
+        "category": "detect-ai"
+      },
+      {
+        "command": "detect-ai.scanSelection",
+        "title": "Scan Selection",
+        "category": "detect-ai"
+      },
+      {
+        "command": "detect-ai.scanWorkspace",
+        "title": "Scan Workspace",
+        "category": "detect-ai"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "detect-ai.scanSelection",
+          "group": "detect-ai@1",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "detect-ai.scanFile",
+          "group": "detect-ai@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "detect-ai.scanFile",
+          "group": "detect-ai@1",
+          "when": "explorerResourceIsFile"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "detect-ai",
+      "properties": {
+        "detect-ai.threshold": {
+          "type": "number",
+          "default": 75,
+          "description": "AI score threshold for warnings"
+        },
+        "detect-ai.showInStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show AI score in status bar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

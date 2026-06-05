@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detect-ai — Result</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        header p { color: #94a3b8; }
+
+        .score-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+        }
+        .score-value {
+            font-size: 5rem;
+            font-weight: 800;
+            color: #f39c12;
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        .verdict-badge {
+            display: inline-block;
+            background: #f39c1222;
+            color: #f39c12;
+            border: 1px solid #f39c1244;
+            border-radius: 12px;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .confidence {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .panel h2 {
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .rule-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        .rule-name {
+            width: 140px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .rule-score {
+            width: 50px;
+            text-align: right;
+            font-size: 0.9rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .rule-msg {
+            width: 100%;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+            padding-left: 152px;
+        }
+        .rule-detail {
+            font-size: 0.75rem;
+            color: #475569;
+            margin-top: 2px;
+            padding-left: 152px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #334155;
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        .back-btn:hover { background: #475569; }
+
+        footer {
+            text-align: center;
+            color: #475569;
+            font-size: 0.8rem;
+            margin-top: 40px;
+        }
+        footer a { color: #8b5cf6; text-decoration: none; }
+
+        pre {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>detect-ai</h1>
+            <p>Detection result</p>
+        </header>
+
+        <div class="score-card">
+            <div class="score-value">53.55</div>
+            <div class="score-label">/ 100 AI Score</div>
+            <div class="verdict-badge">❓ 难以判断</div>
+            <div class="confidence">Confidence: 15%</div>
+        </div>
+
+        <div class="panel">
+            <h2>📊 Rule Breakdown</h2>
+            
+            <div class="rule-item">
+                <div class="rule-name">naming</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 50.0%; background: #f39c12"></div>
+                </div>
+                <div class="rule-score" style="color: #f39c12">50.0</div>
+            </div>
+            <div class="rule-msg">2 identifiers analyzed: avg_len=5.5, short_names=50%</div>
+            
+            <div class="rule-detail">→ 50% short names (human-like)</div>
+            
+            <div class="rule-detail">→ Perfectly consistent snake_case naming</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">docstrings</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 30.0%; background: #2ecc71"></div>
+                </div>
+                <div class="rule-score" style="color: #2ecc71">30.0</div>
+            </div>
+            <div class="rule-msg">0/1 functions have docstrings, 0 structured</div>
+            
+            <div class="rule-detail">→ Only 0% of functions have docstrings (human-like sparse docs)</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">type_hints</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 95.0%; background: #e74c3c"></div>
+                </div>
+                <div class="rule-score" style="color: #e74c3c">95.0</div>
+            </div>
+            <div class="rule-msg">1/1 params typed, 1/1 returns typed</div>
+            
+            <div class="rule-detail">→ 100% parameters have type hints (AI: near 100%)</div>
+            
+            <div class="rule-detail">→ 100% functions have return type hints</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">syntax_preferences</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 70.0%; background: #f39c12"></div>
+                </div>
+                <div class="rule-score" style="color: #f39c12">70.0</div>
+            </div>
+            <div class="rule-msg">is_None=1, fstrings=0, listcomps=0</div>
+            
+            <div class="rule-detail">→ 100% None checks use &#39;is None&#39; (AI: prefers Pythonic style)</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">comments</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 40.0%; background: #2ecc71"></div>
+                </div>
+                <div class="rule-score" style="color: #2ecc71">40.0</div>
+            </div>
+            <div class="rule-msg">No comments found</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">formatting</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 50.0%; background: #f39c12"></div>
+                </div>
+                <div class="rule-score" style="color: #f39c12">50.0</div>
+            </div>
+            <div class="rule-msg">quotes: 0/1 double, spacing issues: 0, trailing: 0</div>
+            
+            
+            <div class="rule-item">
+                <div class="rule-name">complexity</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: 35.0%; background: #2ecc71"></div>
+                </div>
+                <div class="rule-score" style="color: #2ecc71">35.0</div>
+            </div>
+            <div class="rule-msg">0/1 have try/except, 0 use with, avg_depth=2.0</div>
+            
+            <div class="rule-detail">→ Only 0% of functions have try/except (human-like)</div>
+            
+            
+        </div>
+
+        <div class="panel">
+            <h2>📈 Score Distribution</h2>
+            <canvas id="chart" height="120"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>📝 Code</h2>
+            <pre>def process(data: list) -&gt; dict:
+    if data is None:
+        return {}
+    return {&#39;count&#39;: len(data)}</pre>
+        </div>
+
+        <a href="/" class="back-btn">← Analyze another</a>
+
+        <footer>
+            <a href="https://github.com/zhuli/detect-ai" target="_blank">GitHub</a> &nbsp;|&nbsp;
+            Inspired by <a href="https://github.com/zhuli/deai" target="_blank">deai</a>
+        </footer>
+    </div>
+
+    <script>
+        new Chart(document.getElementById('chart'), {
+            type: 'bar',
+            data: {
+                labels: ["naming", "docstrings", "type_hints", "syntax_preferences", "comments", "formatting", "complexity"],
+                datasets: [{
+                    label: 'AI Score',
+                    data: [50.0, 30.0, 95.0, 70.0, 40.0, 50.0, 35.0],
+                    backgroundColor: ["#f39c12", "#2ecc71", "#e74c3c", "#f39c12", "#2ecc71", "#f39c12", "#2ecc71"],
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

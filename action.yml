@@ -1,0 +1,82 @@
+name: 'Detect AI Code'
+description: 'Scan repository for AI-generated code fingerprints. The antagonist of deai.'
+author: 'Anonymous'
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  path:
+    description: 'Path to scan (file or directory)'
+    required: false
+    default: '.'
+  threshold:
+    description: 'AI score threshold (0-100). Fail CI if exceeded.'
+    required: false
+    default: '80'
+  format:
+    description: 'Output format: text, json, markdown, badge'
+    required: false
+    default: 'markdown'
+  verbose:
+    description: 'Show per-rule breakdown'
+    required: false
+    default: 'false'
+  git-check:
+    description: 'Also analyze git history for forgery'
+    required: false
+    default: 'false'
+
+outputs:
+  report:
+    description: 'Detection report in chosen format'
+  max-score:
+    description: 'Maximum AI score detected'
+  verdict:
+    description: 'Overall verdict (human/likely_human/uncertain/likely_ai/ai)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install detect-ai
+      shell: bash
+      run: |
+        pip install "git+https://github.com/zhuli/detect-ai.git#egg=detect-ai[web]"
+
+    - name: Run detection
+      id: detect
+      shell: bash
+      run: |
+        VERBOSE_FLAG=""
+        if [ "${{ inputs.verbose }}" = "true" ]; then
+          VERBOSE_FLAG="-v"
+        fi
+        REPORT=$(detect-ai scan "${{ inputs.path }}" -f "${{ inputs.format }}" $VERBOSE_FLAG)
+        echo "report<<EOF" >> "$GITHUB_OUTPUT"
+        echo "$REPORT" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
+        MAX_SCORE=$(detect-ai scan "${{ inputs.path }}" -f json | python -c "import sys,json; d=json.load(sys.stdin); print(max(r['overall_score'] for r in d.get('reports',[d])))")
+        echo "max-score=$MAX_SCORE" >> "$GITHUB_OUTPUT"
+        if (( $(echo "$MAX_SCORE > ${{ inputs.threshold }}" | bc -l) )); then
+          echo "verdict=likely_ai" >> "$GITHUB_OUTPUT"
+          exit 1
+        else
+          echo "verdict=human" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Comment PR
+      if: github.event_name == 'pull_request' && failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## 🤖 AI Code Detection Alert\n\nThe PR contains code with an AI score exceeding the threshold.\n\nPlease review the source carefully.'
+          })

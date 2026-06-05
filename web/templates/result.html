@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detect-ai — Result</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        header p { color: #94a3b8; }
+
+        .score-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+        }
+        .score-value {
+            font-size: 5rem;
+            font-weight: 800;
+            color: {{ verdict_meta.color }};
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        .verdict-badge {
+            display: inline-block;
+            background: {{ verdict_meta.color }}22;
+            color: {{ verdict_meta.color }};
+            border: 1px solid {{ verdict_meta.color }}44;
+            border-radius: 12px;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .confidence {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        .file-count {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .panel h2 {
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .file-name {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            word-break: break-all;
+        }
+        .file-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .file-verdict {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .file-bar-bg {
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .file-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .rule-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        .rule-name {
+            width: 140px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .rule-score {
+            width: 45px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .rule-msg {
+            width: 100%;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 3px;
+            padding-left: 152px;
+        }
+        .rule-detail {
+            font-size: 0.7rem;
+            color: #475569;
+            margin-top: 2px;
+            padding-left: 152px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #334155;
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        .back-btn:hover { background: #475569; }
+
+        footer {
+            text-align: center;
+            color: #475569;
+            font-size: 0.8rem;
+            margin-top: 40px;
+        }
+        footer a { color: #8b5cf6; text-decoration: none; }
+
+        pre {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>detect-ai</h1>
+            <p>Detection result</p>
+        </header>
+
+        <div class="score-card">
+            <div class="score-value">{{ overall }}</div>
+            <div class="score-label">/ 100 AI Score</div>
+            <div class="verdict-badge">{{ verdict_meta.emoji }} {{ verdict_meta.label }}</div>
+            <div class="confidence">Confidence: {{ (confidence * 100)|int }}%</div>
+            {% if file_count > 1 %}
+            <div class="file-count">{{ file_count }} files scanned</div>
+            {% endif %}
+        </div>
+
+        {% if file_count > 1 %}
+        <div class="panel">
+            <h2>📁 Files</h2>
+            {% for r in reports %}
+            <div class="file-card">
+                <div class="file-header">
+                    <div>
+                        <div class="file-name">{{ r.file_path }}</div>
+                        <div class="file-verdict">{{ r.verdict }} — confidence {{ (r.confidence * 100)|int }}%</div>
+                    </div>
+                    <div class="file-score" style="color: {% if r.overall_score > 70 %}#e74c3c{% elif r.overall_score > 40 %}#f39c12{% else %}#2ecc71{% endif %}">
+                        {{ r.overall_score }}
+                    </div>
+                </div>
+                <div class="file-bar-bg">
+                    <div class="file-bar-fill" style="width: {{ r.overall_score }}%; background: {% if r.overall_score > 70 %}#e74c3c{% elif r.overall_score > 40 %}#f39c12{% else %}#2ecc71{% endif %}"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="panel">
+            <h2>📊 Rule Breakdown — {{ reports[0].file_path if reports else '' }}</h2>
+            {% for rule in reports[0].results %}
+            <div class="rule-item">
+                <div class="rule-name">{{ rule.rule_name }}</div>
+                <div class="rule-bar-bg">
+                    <div class="rule-bar-fill" style="width: {{ rule.score }}%; background: {% if rule.score > 70 %}#e74c3c{% elif rule.score > 40 %}#f39c12{% else %}#2ecc71{% endif %}"></div>
+                </div>
+                <div class="rule-score" style="color: {% if rule.score > 70 %}#e74c3c{% elif rule.score > 40 %}#f39c12{% else %}#2ecc71{% endif %}">{{ rule.score|round(1) }}</div>
+            </div>
+            <div class="rule-msg">{{ rule.message }}</div>
+            {% for d in rule.details %}
+            <div class="rule-detail">→ {{ d.message }}</div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2>📈 Score Distribution</h2>
+            <canvas id="chart" height="120"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>📝 Source</h2>
+            <pre>{{ code_display }}</pre>
+        </div>
+
+        <a href="/" class="back-btn">← Analyze another</a>
+
+        <footer>
+            <a href="https://github.com/zhuli/detect-ai" target="_blank">GitHub</a> &nbsp;|&nbsp;
+            Inspired by <a href="https://github.com/zhuli/deai" target="_blank">deai</a>
+        </footer>
+    </div>
+
+    <script>
+        new Chart(document.getElementById('chart'), {
+            type: 'bar',
+            data: {
+                labels: {{ labels|tojson }},
+                datasets: [{
+                    label: 'AI Score',
+                    data: {{ scores|tojson }},
+                    backgroundColor: {{ colors|tojson }},
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

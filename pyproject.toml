@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "detect-ai"
+version = "0.1.0"
+description = "Detect AI-generated source code. The antagonist of deai."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Anonymous", email = "anon@example.com"},
+]
+keywords = ["ai", "detection", "code", "ast", "analysis", "deai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+web = ["flask>=3.0.0"]
+ml = ["scikit-learn>=1.3.0", "numpy>=1.24.0"]
+dev = ["pytest>=7.0", "black", "mypy", "ruff"]
+
+[project.scripts]
+detect-ai = "detect_ai.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/zhuli/detect-ai"
+Issues = "https://github.com/zhuli/detect-ai/issues"

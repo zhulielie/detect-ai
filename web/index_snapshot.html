@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detect-ai — AI 代码检测器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+        .tagline {
+            display: inline-block;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 12px;
+        }
+        .panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            color: #e2e8f0;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #8b5cf6;
+        }
+        select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .error {
+            background: #7f1d1d;
+            border: 1px solid #b91c1c;
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        footer {
+            text-align: center;
+            color: #475569;
+            font-size: 0.8rem;
+            margin-top: 40px;
+        }
+        footer a { color: #8b5cf6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>detect-ai</h1>
+            <p>The antagonist of deai — detect AI-generated code</p>
+            <span class="tagline">🤖 AST-based fingerprinting &nbsp;|&nbsp; 7 detection rules</span>
+        </header>
+
+        
+
+        <form action="/analyze" method="POST">
+            <div class="panel">
+                <label for="code">Paste your Python code</label>
+                <textarea name="code" id="code" placeholder="def hello():
+    print('Hello, world!')"></textarea>
+            </div>
+
+            <div class="panel" style="display: flex; gap: 16px; align-items: center; justify-content: space-between;">
+                <div>
+                    <label for="language">Language</label>
+                    <select name="language" id="language">
+                        <option value="python" selected>Python</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">🔍 Analyze</button>
+            </div>
+        </form>
+
+        <footer>
+            <a href="https://github.com/zhuli/detect-ai" target="_blank">GitHub</a> &nbsp;|&nbsp;
+            Inspired by <a href="https://github.com/zhuli/deai" target="_blank">deai</a>
+        </footer>
+    </div>
+</body>
+</html>

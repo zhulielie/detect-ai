@@ -2,7 +2,7 @@
 
 # 🔍 detect-ai
 
-**[deai](https://github.com/zhulielie/deai) 的宿敌。**
+**[deai](https://github.com/zhulielie/deai/blob/main/README.zh-CN.md) 的宿敌。**
 
 *通过多层 AST 指纹、统计分析和对抗硬化，检测 AI 生成的源代码。*
 
@@ -10,7 +10,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/zhuli/detect-ai/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/zhulielie/detect-ai/actions)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Extension-blueviolet.svg)](./vscode)
 [![Web UI](https://img.shields.io/badge/Web-UI-orange.svg)](./web)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](./Dockerfile)
@@ -41,7 +41,7 @@
 
 ## ⚔️ 与 deai 的对抗
 
-我们构建 **detect-ai** 就是为了对抗 **[deai](https://github.com/zhulielie/deai)** —— 一个把 AI 代码伪装成人类代码的"去 AI 化"工具。
+我们构建 **detect-ai** 就是为了对抗 **[deai](https://github.com/zhulielie/deai/blob/main/README.zh-CN.md)** —— 一个把 AI 代码伪装成人类代码的"去 AI 化"工具。
 
 ### 第一轮 — deai 伪装前后对比
 

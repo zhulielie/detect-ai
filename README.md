@@ -2,7 +2,7 @@
 
 # 🔍 detect-ai
 
-**The antagonist of [deai](https://github.com/zhuli/deai).**
+**The antagonist of [deai](https://github.com/zhulielie/deai).**
 
 *Detect AI-generated source code through multi-layer AST fingerprinting, statistical analysis, and adversarial hardening.*
 
@@ -10,7 +10,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/zhuli/detect-ai/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/zhulielie/detect-ai/actions)
 [![VS Code](https://img.shields.io/badge/VS%20Code-Extension-blueviolet.svg)](./vscode)
 [![Web UI](https://img.shields.io/badge/Web-UI-orange.svg)](./web)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](./Dockerfile)
@@ -41,7 +41,7 @@ Modern AI coding assistants (ChatGPT, Claude, Copilot, Cursor) generate code wit
 
 ## ⚔️ Adversarial: detect-ai vs deai
 
-We built **detect-ai** specifically to fight **[deai](https://github.com/zhuli/deai)** — an AI code humanizer that strips fingerprints.
+We built **detect-ai** specifically to fight **[deai](https://github.com/zhulielie/deai)** — an AI code humanizer that strips fingerprints.
 
 ### Round 1 — Before vs After deai Humanization
 

@@ -46,7 +46,7 @@ runs:
     - name: Install detect-ai
       shell: bash
       run: |
-        pip install "git+https://github.com/zhuli/detect-ai.git#egg=detect-ai[web]"
+        pip install "git+https://github.com/zhulielie/detect-ai.git#egg=detect-ai[web]"
 
     - name: Run detection
       id: detect

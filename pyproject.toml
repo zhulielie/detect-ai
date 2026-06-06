@@ -39,5 +39,5 @@ detect-ai = "detect_ai.cli:main"
 packages = ["detect_ai"]
 
 [project.urls]
-Homepage = "https://github.com/zhuli/detect-ai"
-Issues = "https://github.com/zhuli/detect-ai/issues"
+Homepage = "https://github.com/zhulielie/detect-ai"
+Issues = "https://github.com/zhulielie/detect-ai/issues"

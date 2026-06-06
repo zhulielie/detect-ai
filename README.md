@@ -6,6 +6,8 @@
 
 *Detect AI-generated source code through multi-layer AST fingerprinting, statistical analysis, and adversarial hardening.*
 
+[🇨🇳 中文文档](README.zh-CN.md)
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/zhuli/detect-ai/actions)

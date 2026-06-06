@@ -15,6 +15,8 @@
 [![Web UI](https://img.shields.io/badge/Web-UI-orange.svg)](./web)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](./Dockerfile)
 [![在线体验](https://img.shields.io/badge/在线体验-00C7B7.svg)](https://detect-ai-neur.onrender.com/)
+[![Gitee Stars](https://gitee.com/zhulielie/detect-ai/badge/star.svg?theme=dark)](https://gitee.com/zhulielie/detect-ai/stargazers)
+[![Gitee Forks](https://gitee.com/zhulielie/detect-ai/badge/fork.svg?theme=dark)](https://gitee.com/zhulielie/detect-ai/members)
 
 </div>
 
@@ -288,7 +290,7 @@ MIT
 
 > *此工具是 deai 的阴阳之阳。请负责任地使用。*
 
-如果觉得项目有用，请在 GitHub 上点一颗 ⭐！
+如果觉得项目有用，请在 [GitHub](https://github.com/zhulielie/detect-ai) 或 [Gitee](https://gitee.com/zhulielie/detect-ai) 上点一颗 ⭐！
 
 [![Star History Chart](https://api.star-history.com/svg?repos=zhulielie/detect-ai&type=Date)](https://star-history.com/#zhulielie/detect-ai&Date)
 

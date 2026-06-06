@@ -15,6 +15,8 @@
 [![Web UI](https://img.shields.io/badge/Web-UI-orange.svg)](./web)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](./Dockerfile)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-00C7B7.svg)](https://detect-ai-neur.onrender.com/)
+[![Gitee Stars](https://gitee.com/zhulielie/detect-ai/badge/star.svg?theme=dark)](https://gitee.com/zhulielie/detect-ai/stargazers)
+[![Gitee Forks](https://gitee.com/zhulielie/detect-ai/badge/fork.svg?theme=dark)](https://gitee.com/zhulielie/detect-ai/members)
 
 </div>
 
@@ -305,7 +307,7 @@ MIT
 
 > *This tool is the yang to deai's yin. Use responsibly.*
 
-If you find this project useful, give it a ⭐ on GitHub!
+If you find this project useful, give it a ⭐ on [GitHub](https://github.com/zhulielie/detect-ai) or [Gitee](https://gitee.com/zhulielie/detect-ai)!
 
 [![Star History Chart](https://api.star-history.com/svg?repos=zhulielie/detect-ai&type=Date)](https://star-history.com/#zhulielie/detect-ai&Date)
 

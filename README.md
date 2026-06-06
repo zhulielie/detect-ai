@@ -307,4 +307,6 @@ MIT
 
 If you find this project useful, give it a ⭐ on GitHub!
 
+[![Star History Chart](https://api.star-history.com/svg?repos=zhulielie/detect-ai&type=Date)](https://star-history.com/#zhulielie/detect-ai&Date)
+
 </div>
